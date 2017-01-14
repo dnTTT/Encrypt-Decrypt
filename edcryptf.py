@@ -10,6 +10,7 @@ from msvcrt import getch
 import ntpath
 import Tkinter, tkFileDialog
 import easygui
+from os.path import basename
 
 def encrypt_file(key, in_filename, out_filename, chunksize=64*1024):
     """ Encrypts a file using AES (CBC mode) with the
@@ -240,8 +241,9 @@ def decryptfile():
         if pathc == "Y" or pathc == "y":
             print("[*] Choose the path to save the file: ")
             root = Tkinter.Tk()
-            out_filename = tkFileDialog.askdirectory(parent=root, initialdir="/", title='Please select a directory')
-            #out_filename = path + out_filename
+            path = tkFileDialog.askdirectory(parent=root, initialdir="/", title='Please select a directory')
+            t_filename = os.path.splitext(in_filename)[0]
+            out_filename = path + "\\" + basename(t_filename)
             remove = raw_input("[*] Delete the encrypted file after decrypting? (Y/N): ")
             if remove == "Y" or remove == "y":
                 decrypt_file(key, in_filename, out_filename, chunksize=24*1024)
@@ -352,17 +354,25 @@ def option1(dirname, key):
     print("[*] This will encrypt all files including allready encrypted files!")
     remove = raw_input("[*] Delete the originals after encrypting? (Y/N)")
     if remove == "Y" or remove == "y":
-        for in_filename in os.listdir(dirname):
-            file = dirname + "/" + in_filename
-            out_filename = (file + ".enc")
-            encrypt_file(key, file, out_filename, chunksize=64 * 1024)
-            os.remove(file)
+        cfiles = []
+        for root, dirs, files in os.walk(dirname):
+            for in_filename in files:
+                cfiles.append(os.path.join(root, in_filename))
+        for x in range(0, len(cfiles)):
+            out_filename = (cfiles[x] + ".enc")
+            out_filename = out_filename.replace('/', "\\")
+            encrypt_file(key, cfiles[x], out_filename, chunksize=64 * 1024)
+            os.remove(cfiles[x])
         maindef()
     elif remove == "N" or remove == "n":
-        for in_filename in os.listdir(dirname):
-            file = dirname + "/" + in_filename
-            out_filename = (file + ".enc")
-            encrypt_file(key, file, out_filename, chunksize=64 * 1024)
+        cfiles = []
+        for root, dirs, files in os.walk(dirname):
+            for in_filename in files:
+                cfiles.append(os.path.join(root, in_filename))
+        for x in range(0, len(cfiles)):
+            out_filename = (cfiles[x] + ".enc")
+            out_filename = out_filename.replace('/', "\\")
+            encrypt_file(key, cfiles[x], out_filename, chunksize=64 * 1024)
         maindef()
     else:
         cls()
@@ -462,15 +472,21 @@ def decryptopt1(dirname , key):
     print("[*] This will decrypt all encrypted files.")
     remove = raw_input("[*] Delete the originals after encrypting? (Y/N)")
     if remove == "Y" or remove == "y":
-        for in_filename in os.listdir(dirname):
-            file = dirname + "/" + in_filename
-            decrypt_file(key, file, out_filename=None, chunksize=64 * 1024)
-            os.remove(file)
+        cfiles = []
+        for root, dirs, files in os.walk(dirname):
+            for in_filename in files:
+                cfiles.append(os.path.join(root, in_filename))
+        for x in range(0, len(cfiles)):
+            decrypt_file(key, cfiles[x], out_filename=None, chunksize=64 * 1024)
+            os.remove(cfiles[x])
         maindef()
     elif remove == "N" or remove == "n":
-        for in_filename in os.listdir(dirname):
-            file = dirname + "/" + in_filename
-            decrypt_file(key, file, out_filename=None, chunksize=64 * 1024)
+        cfiles = []
+        for root, dirs, files in os.walk(dirname):
+            for in_filename in files:
+                cfiles.append(os.path.join(root, in_filename))
+        for x in range(0, len(cfiles)):
+            decrypt_file(key, cfiles[x], out_filename=None, chunksize=64 * 1024)
         maindef()
     #in_filename = raw_input("Insert the name of the file: ")
     else:
@@ -483,19 +499,25 @@ def decryptopt2(dirname , key):
     exten = raw_input("[*] Insert the entended extension to encrypt (ex: txt): ")
     remove = raw_input("[*] Delete the originals after encrypting? (Y/N)")
     if remove == "Y" or remove == "y":
-        for in_filename in os.listdir(dirname):
-            if in_filename.lower().endswith(exten):
-                file = dirname + "/" + in_filename
-                decrypt_file(key, file, out_filename=None, chunksize=64 * 1024)
-                os.remove(file)
+        cfiles = []
+        for root, dirs, files in os.walk(dirname):
+            for in_filename in files:
+                if in_filename.lower().endswith(exten):
+                    cfiles.append(os.path.join(root, in_filename))
+                    for x in range(0, len(cfiles)):
+                        decrypt_file(key, cfiles[x], out_filename=None, chunksize=64 * 1024)
+                        os.remove(cfiles[x])
             else:
                 continue
         maindef()
     elif remove == "N" or remove == "n":
-        for in_filename in os.listdir(dirname):
-            file = dirname + "/" + in_filename
-            if file.lower().endswith(exten):
-                decrypt_file(key, file, out_filename=None, chunksize=64 * 1024)
+        cfiles = []
+        for root, dirs, files in os.walk(dirname):
+            for in_filename in files:
+                if in_filename.lower().endswith(exten):
+                    cfiles.append(os.path.join(root, in_filename))
+                    for x in range(0, len(cfiles)):
+                        decrypt_file(key, cfiles[x], out_filename=None, chunksize=64 * 1024)
             else:
                 continue
         maindef()
